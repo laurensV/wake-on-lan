@@ -1,20 +1,11 @@
 const Router = require('@koa/router');
 
 const router = new Router();
-const wol = require('wake_on_lan');
 
-router.get('/', ctx => {
-    const MAC = '44:8A:5B:5C:06:97';
+const devicesController = require('./controller/devices');
 
-    wol.wake(MAC, function(error) {
-        if (error) {
-            console.log("Could not send wol")
-        } else {
-            console.log("wol packet sent!")
-        }
-    });
-
-    ctx.ok("OK");
-});
+router.get('/devices', devicesController.getDevices);
+router.post('/devices/ping', devicesController.pingDevice);
+router.post('/devices/wol', devicesController.wolDevice);
 
 module.exports = router;
