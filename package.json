@@ -1,0 +1,30 @@
+{
+  "name": "wake-on-lan",
+  "version": "1.0.0",
+  "description": "",
+  "scripts": {
+    "start": "node index.js",
+    "dev": "nodemon index.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/laurensV/wake-on-lan.git"
+  },
+  "author": "Laurens Verspeek",
+  "bugs": {
+    "url": "https://github.com/laurensV/wake-on-lan/issues"
+  },
+  "homepage": "https://github.com/laurensV/wake-on-lan#readme",
+  "dependencies": {
+    "@koa/cors": "^3.1.0",
+    "@koa/router": "^10.0.0",
+    "koa": "^2.13.1",
+    "koa-body": "^4.2.0",
+    "lodash": "^4.17.21",
+    "yup": "^0.32.9"
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.10"
+  }
+}
