@@ -1,0 +1,13 @@
+version: '3'
+services:
+  authserver:
+    image: node:14-slim
+    working_dir: /code
+    command: npm start
+    ports:
+      - 3000:3000
+    volumes:
+      - ./:/code:cached
+    environment:
+      NODE_ENV: development
+      APP_ENV: development
