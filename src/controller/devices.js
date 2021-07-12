@@ -1,4 +1,5 @@
 const wakeOnLan = require('@mi-sec/wol');
+const ping = require('ping');
 const config = require('../generic/config');
 const {ValidationError} = require("../generic/errors");
 
@@ -9,10 +10,13 @@ module.exports = {
     },
     pingDevice: async ctx => {
         const {ip} = ctx.request.body;
-
-        const probe = await ping.promise.probe(ip)
-
-        ctx.ok("OK");
+        let probe;
+        if (ip && ip.length) {
+            probe = await ping.promise.probe(ip);
+        } else {
+            throw new ValidationError('ip address required')
+        }
+        ctx.ok(probe.alive);
     },
     wolDevice: async ctx => {
         const {mac} = ctx.request.body;

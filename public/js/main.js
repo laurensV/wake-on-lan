@@ -18,16 +18,41 @@ const getDevices = async () => {
 
             // Wake Device Button
             var button = document.createElement('button');
-            button.classList.add('wake');
+            button.id = deviceData[p]["mac"];
+            button.classList.add('is-loading','button');
             var buttonText = document.createTextNode('Wake');
             button.appendChild(buttonText);
             listItem.appendChild(button); // Add div to li to appear on hover
             button.onclick = () => {wakeDevice(deviceData[p]["mac"])}; // Wake this mac_addr
+            pingDevice(deviceData[p]["ip"], button)
 
         }
     } catch (e) {
         console.error(e);
         devices.innerHTML = "Could not fetch devices"
+    }
+}
+
+const pingDevice = async (ip, button) => {
+    try {
+        const rawResponse = await fetch('/devices/ping', {
+            method: 'POST',
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ip})
+        });
+        if (rawResponse.status !== 200)
+            throw new Error('Could not ping device');
+        const response = await rawResponse.json();
+        button.classList.remove('is-loading')
+        if (response) {
+            button.disabled = true;
+        }
+    } catch (e) {
+        console.error(e);
+        alert("Could not ping device")
     }
 }
 
