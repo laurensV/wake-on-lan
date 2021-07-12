@@ -19,11 +19,11 @@
   "dependencies": {
     "@koa/cors": "^3.1.0",
     "@koa/router": "^10.0.0",
+    "@mi-sec/wol": "^1.0.13",
     "koa": "^2.13.1",
     "koa-body": "^4.2.0",
     "koa-static": "^5.0.0",
     "lodash": "^4.17.21",
-    "wake_on_lan": "^1.0.0",
     "yup": "^0.32.9"
   },
   "devDependencies": {

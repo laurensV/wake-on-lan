@@ -1,36 +1,33 @@
-const wol = require('wake_on_lan');
+const wakeOnLan = require('@mi-sec/wol');
 const config = require('../generic/config');
+const {ValidationError} = require("../generic/errors");
 
 module.exports = {
     getDevices: ctx => {
         const devices = config.devices;
         ctx.ok(devices);
     },
-    pingDevice: ctx => {
-        const MAC = '44:8A:5B:5C:06:97';
+    pingDevice: async ctx => {
+        const {ip} = ctx.request.body;
 
-        wol.wake(MAC, function (error) {
-            if (error) {
-                console.log("Could not send wol")
-            } else {
-                console.log("wol packet sent!")
-            }
-        });
+        const probe = await ping.promise.probe(ip)
 
         ctx.ok("OK");
     },
-    wolDevice: ctx => {
-        const MAC = '44:8A:5B:5C:06:97';
+    wolDevice: async ctx => {
+        const {mac} = ctx.request.body;
 
-        wol.wake(MAC, function (error) {
-            if (error) {
-                console.log("Could not send wol")
-            } else {
-                console.log("wol packet sent!")
-            }
-        });
-
-        ctx.ok("OK");
+        if (mac && mac.length) {
+            await wakeOnLan(mac, {
+                address: '255.255.255.255',
+                packets: 3,
+                interval: 100,
+                port: 9
+            } );
+        } else {
+            throw new ValidationError('mac address required')
+        }
+        ctx.ok(`wake-on-lan packets sent to ${mac}`);
     },
 };
 
