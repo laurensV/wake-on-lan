@@ -17,13 +17,25 @@ module.exports = {
         ctx.ok(devices);
     },
     findDevices: async ctx => {
-        const devices = await find();
-        db.set('devices', devices)
-            .write()
-        ctx.ok(devices);
+        const onlineDevices = await find();
+        const devices = db.get('devices').value();
+        const newDevices = onlineDevices.filter(onlineDevice => {
+            if (devices.some(device=> device.mac === onlineDevice.mac)) {
+                // Update IPs of online devices
+                db.get('devices')
+                    .find({ mac: onlineDevice.mac })
+                    .assign({ ip: onlineDevice.ip })
+                    .write()
+                return false;
+            }
+            return true;
+
+        })
+        ctx.ok(newDevices);
     },
     addDevice: ctx => {
-        const {name, mac, ip} = ctx.request.body;
+        let {name, mac, ip} = ctx.request.body;
+        mac = mac.toLowerCase();
         if (!isValidMACAddress(mac))
             throw new ValidationError('Invalid mac address')
         const existDevice = db.get('devices')
@@ -60,7 +72,13 @@ module.exports = {
         } else {
             throw new ValidationError('ip address required')
         }
-        ctx.ok(probe.alive);
+        if (probe.alive) {
+            db.get('devices')
+                .find({ ip })
+                .assign({ lastOnline: new Date() })
+                .write()
+        }
+        ctx.ok({alive:probe.alive});
     },
     wolDevice: async ctx => {
         const {mac} = ctx.request.body;

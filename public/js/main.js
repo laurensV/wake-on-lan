@@ -1,6 +1,32 @@
+let devices, newDevices;
 const handleError = (error) => {
     console.error(error);
     alert(error)
+}
+
+const newDeviceDOMItem = (device) => {
+    var listItem = document.createElement("li"); // Create li element
+    listItem.id = device["mac"];
+    var listItemText = document.createTextNode(`${device.name} (${device.ip})`); // Create text for the li
+    listItem.appendChild(listItemText); // Add text to the li
+    listItem.innerHTML = `
+    <div class='name'>Name: ${device.name}</div>
+    <div class='ip'>IP: ${device.ip}</div>
+    <div class='mac'>MAC: ${device.mac}</div>`;
+    newDevices.appendChild(listItem); // Add li to the ul
+
+    // Add Device Button
+    var wakeButton = document.createElement('button');
+    wakeButton.classList.add('button','is-primary');
+    var buttonText = document.createTextNode('Add');
+    wakeButton.appendChild(buttonText);
+    listItem.appendChild(wakeButton); // Add div to li to appear on hover
+    wakeButton.onclick = async () => {
+        if(await addDevice(device, wakeButton)) {
+            listItem.remove()
+        }
+
+    }; // add this device
 }
 
 const deviceDOMItem = (device) => {
@@ -9,9 +35,10 @@ const deviceDOMItem = (device) => {
     var listItemText = document.createTextNode(`${device.name} (${device.ip})`); // Create text for the li
     listItem.appendChild(listItemText); // Add text to the li
     listItem.innerHTML = `
-    <div class='name'>${device.name}</div>
-    <div class='ip'>${device.ip}</div>
-    <div class='mac'>${device.mac}</div>`;
+    <div class='name'>Name: ${device.name}</div>
+    <div class='ip'>IP: ${device.ip}</div>
+    <div class='mac'>MAC: ${device.mac}</div>
+    <div class='last-online'>Last online: <span class="last-online-value">${moment(device.lastOnline).fromNow() || "never"}</span></div>`;
     devices.appendChild(listItem); // Add li to the ul
 
     // Wake Device Button
@@ -32,7 +59,6 @@ const deviceDOMItem = (device) => {
 }
 
 const getDevices = async () => {
-    const devices = document.getElementById('devices');
     const refresh = document.getElementById('refresh');
     devices.innerHTML = "Loading..";
     refresh.disabled = true;
@@ -45,8 +71,8 @@ const getDevices = async () => {
         devices.innerHTML = "";
         const pings = [];
         for (const p in deviceData) {
-            const {wakeButton} = deviceDOMItem(deviceData[p])
-            pings.push(pingDevice(deviceData[p]["ip"], wakeButton));
+            const {wakeButton, listItem} = deviceDOMItem(deviceData[p])
+            pings.push(pingDevice(deviceData[p]["ip"],listItem, wakeButton));
         }
         await Promise.all(pings);
     } catch (e) {
@@ -57,9 +83,33 @@ const getDevices = async () => {
     }
 }
 
-const pingDevice = async (ip, button) => {
+const findDevices = async () => {
+    const scan = document.getElementById('scan');
+    newDevices.innerHTML = "Loading..";
+    scan.disabled = true;
+    let deviceData;
+    try {
+        const response = await fetch('/devices/find');
+        if (response.status !== 200)
+            throw new Error('Could not fetch new devices');
+        deviceData = await response.json();
+        newDevices.innerHTML = "";
+        const pings = [];
+        for (const p in deviceData) {
+            newDeviceDOMItem(deviceData[p])
+        }
+    } catch (e) {
+        handleError(e)
+        newDevices.innerHTML = "Could not fetch new devices"
+    } finally {
+        scan.disabled = false;
+    }
+}
+
+const pingDevice = async (ip, device, button) => {
     try {
         button.classList.add('is-loading')
+        device.classList.remove('has-text-success','has-text-danger')
         const rawResponse = await fetch('/devices/ping', {
             method: 'POST',
             headers: {
@@ -77,8 +127,12 @@ const pingDevice = async (ip, button) => {
         }
 
 
-        if (response) {
+        if (response.alive) {
+            device.classList.add('has-text-success');
+            device.getElementsByClassName('last-online-value')[0].innerHTML = moment(new Date()).fromNow();
             button.disabled = true;
+        } else {
+            device.classList.add('has-text-danger');
         }
     } catch (e) {
         handleError(e)
@@ -87,15 +141,11 @@ const pingDevice = async (ip, button) => {
     }
 }
 
-const addDevice = async (form) => {
+const addDevice = async (device) => {
+    let success = false;
     const add = document.getElementById('add');
     try {
         add.disabled = true;
-        const device = {
-            name: form.name.value,
-            ip: form.ip.value,
-            mac: form.mac.value
-        }
         const rawResponse = await fetch('/devices/add', {
             method: 'POST',
             headers: {
@@ -112,13 +162,15 @@ const addDevice = async (form) => {
             throw new Error("Could not add device");
         }
 
-        const {wakeButton} = deviceDOMItem(device);
-        pingDevice(device.ip, wakeButton);
+        const {wakeButton, listItem} = deviceDOMItem(device);
+        pingDevice(device.ip, listItem, wakeButton);
+        success = true;
     } catch (e) {
         handleError(e)
     } finally {
         add.disabled = false;
     }
+    return success;
 }
 
 const removeDevice = async (mac, button) => {
@@ -176,5 +228,7 @@ const wakeDevice = async (mac, button) => {
 }
 
 document.addEventListener('DOMContentLoaded', (event) => {
+    devices = document.getElementById('devices');
+    newDevices = document.getElementById('newDevices');
     getDevices();
 });

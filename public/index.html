@@ -2,22 +2,27 @@
 
 <head>
     <title>Wake-On-LAN Server</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <script src="js/main.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/moment@2.29.1/moment.min.js"></script>
     <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/bulma@0.9.3/css/bulma.min.css">
 </head>
 
 <body class="content">
-    <h1>Devices</h1>
-    <button onclick="getDevices()" class="button" id="refresh">refresh</button>
-    <form onsubmit="event.preventDefault();addDevice(this)">
-        Enter name: <input required type="text" name="name">
-        Enter ip: <input required type="text" name="ip">
-        Enter mac: <input required type="text" name="mac">
-        <input type="submit" class="button" id="add" value="Add Device">
-    </form>
-
-    <ul id="devices">
-        Loading..
-        <!--Devices go here, populated by JS-->
-    </ul>
+<h1>Devices</h1>
+<button onclick="getDevices()" class="button" id="refresh">refresh</button>
+<button onclick="findDevices()" class="button" id="scan">scan</button>
+<form onsubmit="event.preventDefault();addDevice({ name: this.name.value, ip: this.ip.value, mac: this.mac.value })">
+    Enter name: <input required type="text" name="name">
+    Enter ip: <input required type="text" name="ip">
+    Enter mac: <input required type="text" name="mac">
+    <input type="submit" class="button" id="add" value="Add Device">
+</form>
+<ul id="newDevices">
+    Scan to find new devices.
+</ul>
+<ul id="devices">
+    Loading..
+    <!--Devices go here, populated by js/main.js-->
+</ul>
 </body>
