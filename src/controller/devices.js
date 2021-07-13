@@ -1,11 +1,16 @@
 const wakeOnLan = require('@mi-sec/wol');
 const ping = require('ping');
+const find = require('local-devices');
 const config = require('../generic/config');
 const {ValidationError} = require("../generic/errors");
 
 module.exports = {
     getDevices: ctx => {
         const devices = config.devices;
+        ctx.ok(devices);
+    },
+    findDevices: async ctx => {
+        const devices = await find();
         ctx.ok(devices);
     },
     pingDevice: async ctx => {
