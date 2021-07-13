@@ -8,6 +8,13 @@
 
 <body class="content">
     <h1>Devices</h1>
+    <button onclick="getDevices()" class="button" id="refresh">refresh</button>
+    <form onsubmit="event.preventDefault();addDevice(this)">
+        Enter name: <input required type="text" name="name">
+        Enter ip: <input required type="text" name="ip">
+        Enter mac: <input required type="text" name="mac">
+        <input type="submit" class="button" id="add" value="Add Device">
+    </form>
 
     <ul id="devices">
         Loading..

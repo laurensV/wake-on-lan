@@ -15,16 +15,23 @@
   "bugs": {
     "url": "https://github.com/laurensV/wake-on-lan/issues"
   },
+  "nodemonConfig": {
+    "ignore": [
+      "devices.json"
+    ]
+  },
   "homepage": "https://github.com/laurensV/wake-on-lan#readme",
   "dependencies": {
     "@koa/cors": "^3.1.0",
     "@koa/router": "^10.0.0",
+    "@mi-sec/mac-address": "^1.0.16",
     "@mi-sec/wol": "^1.0.13",
     "koa": "^2.13.1",
     "koa-body": "^4.2.0",
     "koa-static": "^5.0.0",
     "local-devices": "^3.1.0",
     "lodash": "^4.17.21",
+    "lowdb": "^1.0.0",
     "ping": "^0.4.1",
     "yup": "^0.32.9"
   },
