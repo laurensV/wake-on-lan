@@ -12,7 +12,8 @@ const newDeviceDOMItem = (device) => {
     listItem.innerHTML = `
     <div class='name'>Name: ${device.name}</div>
     <div class='ip'>IP: ${device.ip}</div>
-    <div class='mac'>MAC: ${device.mac}</div>`;
+    <div class='mac'>MAC: ${device.mac}</div>
+    <div class='vendor'>Vendor: ${device.vendor}</div>`;
     newDevices.appendChild(listItem); // Add li to the ul
 
     // Add Device Button

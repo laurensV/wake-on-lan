@@ -16,11 +16,11 @@ app.use(cors())
     .use(errorMiddleware())
     .use(router.routes())
     .use(router.allowedMethods())
-    .use(serve('public', { extensions: true }))
+    .use(serve('public', {extensions: true}))
     .use(async function pageNotFound(ctx) {
         ctx.status = 404;
         ctx.type = 'html';
         ctx.body = fs.createReadStream('public/404.html');
-    });;
+    });
 
 app.listen(3000, () => console.log('running on port 3000'));

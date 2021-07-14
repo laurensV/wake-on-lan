@@ -5,6 +5,8 @@ const find = require('local-devices');
 const config = require('../generic/config');
 const {ValidationError} = require("../generic/errors");
 const db = require('../services/database');
+const network = require('../services/network');
+const jsonVendors = require('../services/vendors.json'); // from https://macaddress.io/database-download/json
 
 module.exports = {
     getDevices: ctx => {
@@ -17,7 +19,21 @@ module.exports = {
         ctx.ok(devices);
     },
     findDevices: async ctx => {
-        const onlineDevices = await find();
+        let default_if;
+        try {
+            default_if = await network.get_default_gateway();
+        } catch (e) {
+            console.error("could not get default interface gateway ip")
+        }
+        const cidr = default_if ? default_if.cidr : undefined;
+        const onlineDevices = await find(cidr);
+        if (default_if) {
+            onlineDevices.unshift({
+                name: 'This Server',
+                ip: default_if.address,
+                mac: default_if.mac
+            })
+        }
         const devices = db.get('devices').value();
         const newDevices = onlineDevices.filter(onlineDevice => {
             if (devices.some(device=> device.mac === onlineDevice.mac)) {
@@ -29,8 +45,11 @@ module.exports = {
                 return false;
             }
             return true;
-
         })
+        for (let k in newDevices) {
+            const vendor = jsonVendors.find(({ id }) => newDevices[k].mac.startsWith(id.toLowerCase()));
+            newDevices[k].vendor = vendor ? vendor.cn : '';
+        }
         ctx.ok(newDevices);
     },
     addDevice: ctx => {
