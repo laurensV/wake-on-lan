@@ -47,8 +47,8 @@ module.exports = {
             return true;
         })
         for (let k in newDevices) {
-            const vendor = jsonVendors.find(({ id }) => newDevices[k].mac.startsWith(id.toLowerCase()));
-            newDevices[k].vendor = vendor ? vendor.cn : '';
+            const vendor = jsonVendors.find(({ i }) => newDevices[k].mac.startsWith(i.toLowerCase()));
+            newDevices[k].vendor = vendor ? vendor.c : '';
         }
         ctx.ok(newDevices);
     },
