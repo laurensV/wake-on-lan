@@ -9,6 +9,7 @@ router.get('/devices/find', devicesController.findDevices);
 router.post('/devices/add', devicesController.addDevice);
 router.post('/devices/remove', devicesController.removeDevice);
 router.post('/devices/update', devicesController.updateDevice);
+router.post('/devices/name', devicesController.getDeviceName);
 router.post('/devices/ping', devicesController.pingDevice);
 router.post('/devices/wol', devicesController.wolDevice);
 

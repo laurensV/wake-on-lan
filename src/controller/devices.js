@@ -1,3 +1,4 @@
+const os = require('os');
 const wakeOnLan = require('@mi-sec/wol');
 const { isValidMACAddress } = require('@mi-sec/mac-address');
 const ping = require('ping');
@@ -18,6 +19,33 @@ module.exports = {
         }
         ctx.ok(devices);
     },
+    getDeviceName: async ctx => {
+        const {ip} = ctx.request.body;
+        let name = '?';
+        if (!ip || !ip.length) {
+            throw new ValidationError('ip address required')
+        }
+        let device = db.get('devices')
+            .find({ ip })
+            .value();
+        try {
+            name = await network.get_name_from_ip(ip);
+        } catch (e) {
+
+        }
+        if(device) {
+            if (device.name === '' && device.name === '?') {
+                db.get('devices')
+                    .find({ip})
+                    .assign({name})
+                    .write()
+            } else {
+                name = device.name;
+            }
+        }
+
+        ctx.ok({name});
+    },
     findDevices: async ctx => {
         let default_if;
         try {
@@ -29,7 +57,7 @@ module.exports = {
         const onlineDevices = await find(cidr);
         if (default_if) {
             onlineDevices.unshift({
-                name: 'This Server',
+                name: os.hostname(),
                 ip: default_if.address,
                 mac: default_if.mac
             })

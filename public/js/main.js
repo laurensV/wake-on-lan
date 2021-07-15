@@ -7,10 +7,8 @@ const handleError = (error) => {
 const newDeviceDOMItem = (device) => {
     var listItem = document.createElement("li"); // Create li element
     listItem.id = device["mac"];
-    var listItemText = document.createTextNode(`${device.name} (${device.ip})`); // Create text for the li
-    listItem.appendChild(listItemText); // Add text to the li
     listItem.innerHTML = `
-    <div class='name'>Name: ${device.name}</div>
+    <div class='name'>Name: <span class="name-value">${device.name}</span></div>
     <div class='ip'>IP: ${device.ip}</div>
     <div class='mac'>MAC: ${device.mac}</div>
     <div class='vendor'>Vendor: ${device.vendor}</div>`;
@@ -28,18 +26,18 @@ const newDeviceDOMItem = (device) => {
         }
 
     }; // add this device
+    return listItem
 }
 
 const deviceDOMItem = (device) => {
     var listItem = document.createElement("li"); // Create li element
     listItem.id = device["mac"];
-    var listItemText = document.createTextNode(`${device.name} (${device.ip})`); // Create text for the li
-    listItem.appendChild(listItemText); // Add text to the li
     listItem.innerHTML = `
-    <div class='name'>Name: ${device.name}</div>
+    <div class='name'>Name: <span class="name-value">${device.name}</span></div>
     <div class='ip'>IP: ${device.ip}</div>
     <div class='mac'>MAC: ${device.mac}</div>
-    <div class='last-online'>Last online: <span class="last-online-value">${moment(device.lastOnline).fromNow() || "never"}</span></div>`;
+    <div class='vendor'>Vendor: ${device.vendor || 'unknown'}</div>
+    <div class='last-online'>Last online: <span class="last-online-value">${device.lastOnline ? moment(device.lastOnline).fromNow() : "never"}</span></div>`;
     devices.appendChild(listItem); // Add li to the ul
 
     // Wake Device Button
@@ -97,13 +95,50 @@ const findDevices = async () => {
         newDevices.innerHTML = "";
         const pings = [];
         for (const p in deviceData) {
-            newDeviceDOMItem(deviceData[p])
+            const deviceItem = newDeviceDOMItem(deviceData[p])
+            getDeviceName(deviceData[p].ip,deviceData[p].name, deviceItem)
         }
     } catch (e) {
         handleError(e)
         newDevices.innerHTML = "Could not fetch new devices"
     } finally {
         scan.disabled = false;
+    }
+}
+
+const getDeviceName = async (ip, name, device) => {
+    try {
+        const nameEl = device.getElementsByClassName('name-value')[0];
+
+        if (name === '' || name === '?') {
+            nameEl.innerHTML = 'Loading..';
+        }
+        const rawResponse = await fetch('/devices/name', {
+            method: 'POST',
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ip})
+        });
+        const response = await rawResponse.json();
+        if (rawResponse.status !== 200) {
+            if (response.type === 'ValidationError') {
+                throw new Error(response.error);
+            }
+            throw new Error("Could not get name of device");
+        }
+
+
+        if (response.name) {
+            nameEl.innerHTML = response.name;
+        } else {
+            nameEl.innerHTML = name;
+        }
+    } catch (e) {
+        handleError(e)
+    } finally {
+        button.classList.remove('is-loading')
     }
 }
 

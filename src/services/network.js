@@ -1,5 +1,6 @@
 const dgram = require('dgram');
 const os = require('os');
+const dns = require('dns');
 
 module.exports = {
      get_local_ip: async function () {
@@ -17,6 +18,14 @@ module.exports = {
                 reject(e);
             }
         })
+    },
+    get_name_from_ip: async function (ip) {
+        try {
+            const res = await dns.promises.lookupService(ip, 0);
+            return res.hostname;
+        } catch (e) {
+            reject(e);
+        }
     },
     get_default_gateway: async function () {
         const ifs = [].concat(...Object.values(os.networkInterfaces())).filter(x => !x.internal && x.family === 'IPv4')
