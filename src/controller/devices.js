@@ -8,9 +8,14 @@ const {ValidationError} = require("../generic/errors");
 const db = require('../services/database');
 const network = require('../services/network');
 const jsonVendors = require('../services/vendors.json'); // from https://macaddress.io/database-download/json
+const mDnsSd = require('node-dns-sd');
 
 module.exports = {
-    getDevices: ctx => {
+    getDevices: async ctx => {
+        console.log(await mDnsSd.discover({
+            name: '_services._dns-sd._udp.local'
+        }));
+
         let devices = db.get('devices').value();
         if (!devices) {
             db.defaults({ devices: [] })
